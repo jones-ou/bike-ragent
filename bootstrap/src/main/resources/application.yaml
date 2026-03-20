@@ -16,7 +16,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.zaxxer.hikari.HikariDataSource
     username: root
-    password: root
+    password: 123456
     url: jdbc:mysql://127.0.0.1:3306/ragent?characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
     hikari:
       connection-timeout: 5000
@@ -38,7 +38,7 @@ milvus:
 rag:
   default:
     collection-name: rag_default_store
-    dimension: 4096
+    dimension: 1024  # bge-m3 嵌入维度默认1024，需与embedding配置一致
     metric-type: COSINE
 
   query-rewrite:
@@ -89,23 +89,26 @@ rag:
 
 ai:
   providers:
-    ollama:
-      url: http://localhost:11434
-      endpoints:
-        chat: /api/chat
-        embedding: /api/embed
-    bailian:
-      url: https://dashscope.aliyuncs.com
-      api-key: ${BAILIAN_API_KEY:}
-      endpoints:
-        chat: /compatible-mode/v1/chat/completions
-        rerank: /api/v1/services/rerank/text-rerank/text-rerank
+    # 保留硅基流动配置，补全rerank端点
     siliconflow:
       url: https://api.siliconflow.cn
-      api-key: ${SILICONFLOW_API_KEY:}
+      api-key: ${SILICONFLOW_API_KEY:sk-ebkzbgujenwwlhwgivvcokmrbeqgztnpzycrlrpndqctajmu}  # 需在环境变量配置你的硅基流动API Key
       endpoints:
         chat: /v1/chat/completions
         embedding: /v1/embeddings
+        rerank: /v1/rerank  # 硅基流动rerank接口端点（通用标准）
+    # 移除无关提供商（ollama/bailian），如需保留可注释
+    # ollama:
+    #   url: http://localhost:11434
+    #   endpoints:
+    #     chat: /api/chat
+    #     embedding: /api/embed
+    # bailian:
+    #   url: https://dashscope.aliyuncs.com
+    #   api-key: ${BAILIAN_API_KEY:}
+    #   endpoints:
+    #     chat: /compatible-mode/v1/chat/completions
+    #     rerank: /api/v1/services/rerank/text-rerank/text-rerank
 
   selection:
     failure-threshold: 2
@@ -114,50 +117,36 @@ ai:
   stream:
     message-chunk-size: 1
 
+  # 聊天模型配置：硅基流动 Qwen/Qwen3-8B
   chat:
-    default-model: qwen3-max
-    deep-thinking-model: qwen3-max
+    default-model: qwen3-8b  # 默认使用Qwen3-8B
+    deep-thinking-model: qwen3-8b
     candidates:
-      - id: qwen-plus
-        provider: bailian
-        model: qwen-plus-latest
-        priority: 1
-      - id: qwen3-max
-        provider: bailian
-        model: qwen3-max
+      - id: qwen3-8b
+        provider: siliconflow  # 提供商指定为硅基流动
+        model: Qwen/Qwen3-8B   # 模型名称严格匹配硅基流动
         supports-thinking: true
-        priority: 3
-      - id: glm-4.7
-        provider: siliconflow
-        model: Pro/zai-org/GLM-4.7
-        supports-thinking: true
-        priority: 0
-      - id: qwen3-local
-        provider: ollama
-        model: qwen3:8b-fp16
-        priority: 2
+        priority: 0  # 最高优先级
 
+  # 嵌入模型配置：硅基流动 BAAI/bge-m3
   embedding:
-    default-model: qwen-emb-8b
+    default-model: bge-m3
     candidates:
-      - id: qwen-emb-8b
-        provider: siliconflow
-        model: Qwen/Qwen3-Embedding-8B
-        dimension: 4096
-        priority: 1
-      - id: qwen-emb-local
-        provider: ollama
-        model: qwen3-embedding:8b-fp16
-        dimension: 4096
-        priority: 2
+      - id: bge-m3
+        provider: siliconflow  # 提供商指定为硅基流动
+        model: BAAI/bge-m3     # 模型名称严格匹配硅基流动
+        dimension: 1024        # bge-m3默认嵌入维度1024（关键参数）
+        priority: 0            # 最高优先级
 
+  # 重排序模型配置：硅基流动 BAAI/bge-reranker-v2-m3
   rerank:
-    default-model: qwen3-rerank
+    default-model: bge-reranker-v2-m3
     candidates:
-      - id: qwen3-rerank
-        provider: bailian
-        model: qwen3-rerank
-        priority: 1
+      - id: bge-reranker-v2-m3
+        provider: siliconflow  # 提供商指定为硅基流动
+        model: BAAI/bge-reranker-v2-m3  # 模型名称严格匹配
+        priority: 0            # 最高优先级
+      # 保留noop兜底（可选）
       - id: rerank-noop
         provider: noop
         model: noop

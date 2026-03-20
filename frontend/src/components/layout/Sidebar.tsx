@@ -1,13 +1,10 @@
 import * as React from "react";
 import { differenceInCalendarDays, isValid } from "date-fns";
 import {
-  BookOpen,
-  Bot,
   LogOut,
   MessageSquare,
   MoreHorizontal,
   Pencil,
-  PlayCircle,
   Plus,
   Search,
   Settings,
@@ -171,10 +168,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="border-b border-[#F0F0F0] pb-3">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#3B82F6]">
-              <Bot className="h-5 w-5 text-white" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                <circle cx="18.5" cy="17.5" r="3.5"/>
+                <circle cx="5.5" cy="17.5" r="3.5"/>
+                <circle cx="15" cy="5" r="1"/>
+                <path d="M12 17.5V14l-3-3 4-3 2 3h2"/>
+              </svg>
             </div>
             <div style={{ fontFamily: sessionTitleFont }}>
-              <p className="text-base font-semibold text-[#1A1A1A]">RAG 智能问答</p>
+              <p className="text-base font-semibold text-[#1A1A1A]">
+                共享单车调度治理问答系统
+              </p>
               <p className="text-xs text-[#999999]">Powered by AI</p>
             </div>
           </div>
@@ -266,7 +270,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             ) : (
               <div>
                 {groupedSessions.map((group, index) => (
-                  <div key={group.label} className={cn("flex flex-col", index === 0 ? "mt-0" : "mt-4")}>
+                  <div
+                    key={group.label}
+                    className={cn("flex flex-col", index === 0 ? "mt-0" : "mt-4")}
+                  >
                     <p className="mb-1.5 pl-3 text-[12px] font-normal leading-[18px] text-[#999999]">
                       {group.label}
                     </p>
@@ -411,29 +418,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="top" sideOffset={8} className="w-48">
-              <DropdownMenuItem asChild>
-                <a
-                  href="https://nageoffer.com/ragent"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center"
-                >
-                  <BookOpen className="mr-2 h-4 w-4" />
-                  官方文档
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a
-                  href="https://space.bilibili.com/352177376"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center"
-                >
-                  <PlayCircle className="mr-2 h-4 w-4" />
-                  哔哩哔哩
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => logout()} className="text-rose-600 focus:text-rose-600">
+              <DropdownMenuItem
+                onClick={() => logout()}
+                className="text-rose-600 focus:text-rose-600"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 退出登录
               </DropdownMenuItem>
@@ -441,11 +429,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </DropdownMenu>
         </div>
       </aside>
-      <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => {
-        if (!open) {
-          setDeleteTarget(null);
-        }
-      }}>
+      <AlertDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+          }
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>删除该会话？</AlertDialogTitle>
